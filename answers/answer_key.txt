@@ -1,0 +1,41 @@
+Duplicate demographics row: S027
+Duplicate demographics row: S012
+Duplicate demographics row: S043
+Inconsistent sex coding 'Male': S043
+Inconsistent sex coding 'female': S006
+Inconsistent sex coding 'm': S034
+Inconsistent sex coding 'F ': S024
+Missing age: S005
+Missing age: S034
+Missing age: S035
+Missing age: S033
+Missing age: S051
+Age 16 (below inclusion age 18): S033
+Age 17 (below inclusion age 18): S036
+heart_rate=250: S002 Week4
+heart_rate=5: S025 Week12
+heart_rate=5: S056 Week12
+systolic_bp=300: S031 Baseline
+heart_rate=5: S003 Week12
+systolic_bp=300: S041 Week8
+Baseline visit before consent: S023
+Baseline visit before consent: S016
+Baseline visit before consent: S047
+Baseline visit before consent: S043
+AE end before start: S009 Dizziness
+AE end before start: S033 Cough
+AE end before start: S014 Headache
+Vitals for subject not in demographics: S998
+Vitals for subject not in demographics: S999
+Date in DD/MM/YYYY: S003 Week12
+Date in DD/MM/YYYY: S023 Week8
+Date in DD/MM/YYYY: S035 Week12
+Date in DD/MM/YYYY: S022 Week8
+Date in DD/MM/YYYY: S053 Baseline
+Date in DD/MM/YYYY: S042 Baseline
+Date in DD/MM/YYYY: S012 Baseline
+Date in DD/MM/YYYY: S054 Baseline
+Serious=Y but severity Mild: S046 Dizziness
+Serious=Y but severity Mild: S049 Fatigue
+Serious=Y but severity Mild: S019 Fatigue
+3 duplicated vitals rows (find them by subject_id + visit)
