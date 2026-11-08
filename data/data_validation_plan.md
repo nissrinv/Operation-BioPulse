@@ -51,7 +51,7 @@ Records any safety complications or side effects reported during the trial.
 | `subject_id` | String / Integer | Must exist in `demographics` | **Relational Integrity Check:** Event must tie back to a trial participant. |
 | `ae_term` | String / Text | Medical term (e.g., `'Headache'`, `'Nausea'`) | Standardized medical term description. Cannot be blank. |
 | `start_date` | Date (YYYY-MM-DD) | Valid calendar date | Must be on or after `consent_date`. |
-| `end_date` | Date (YYYY-MM-DD) | Valid calendar date (or blank if ongoing) | **Chronological Check:** If present, `end_date` must be $\ge$ `start_date`. |
+| `end_date` | Date (YYYY-MM-DD) | Valid calendar date (or blank if ongoing) | **Chronological Check:** If present, `end_date` must be after `start_date`. |
 | `severity` | Categorical | `'Mild'`, `'Moderate'`, `'Severe'` | Controlled terminology. Mandatory field. |
 | `serious` | Categorical | `'Yes'`, `'No'` (or Boolean) | Regulatory flag for Serious Adverse Event (SAE) reporting. |
 
