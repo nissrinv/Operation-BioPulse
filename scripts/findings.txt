@@ -1,0 +1,30 @@
+Demographics
+------------
+* 4 missing values for column age -> Solved by replacing those values with the median of the rest of subjects
+* There are 2 subjects duplicated entries (S012 & S027) -> Need to raise EDQ (Electronic Data Query)
+* There are 2 subject entries with same id (S043) but in one row is a Male and in another is a Female. -> Need to raise a EDQ
+* 4 entrances dont have M or F default values (ex. female, F ,male,...), transformed values to M or F based on entrance. 
+* 2 subjects (S033 & S036) are under age -> Need to raise a EDQ
+
+
+
+Vitals
+-------
+* We have 63 subjects and each subject have vitals measurements 4 times so there should be 252 measures but we have 245 so there is 7 measurements missing (I found where 6 measurements are missing).
+    S998 has only one visit
+    S999 has only one visit
+* There are 3 duplicated entries (S009 Week 8, S005 Baseline & S052 Week 12) -> Need to raise EDQ
+* There are 2 subjects in vitals that are not in demopgraphics "orphans" (S998 & S999)
+* There are 5 visits where the date of visit is before the consent date (S047, S023, S016 & S043)
+* There are 21 visists where the randomisation date is after the visit date.
+* There are 2 entrances where systolic values are not valid (S041, S031) as they are over 200
+* There are 4 entrances where heart rate values are not valid (S002, S025, S056, S003)
+* There are 42 subjects with weight differences between visits very drastic: S001, S002, S003, S004, S006, S008, 
+S009, S010, S013, S016, S017, S018, S019, S021, S023, S024, S026, S027, S028, S030, S031, S032, S033, S034, S035, S037, S038, 
+S039, S041, S042, S043, S045, S047, S048, S050, S051, S052, S053, S054, S056, S057, S058, S059, S060.
+
+
+Adverse Events
+--------------
+* A subject can have none to several adverse events so the first review doesnt show any thing wrong.
+* There are 3 entries (S009, S014,S033) where end date of the adverse events is before the start date -> Need to raise a EDQ

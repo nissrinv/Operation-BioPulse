@@ -1,5 +1,62 @@
 import pandas as pd
 import numpy as np
+import os
+
+excel_path = "Operation_Bio_Pulse_Clinical_Query_Log.xlsx"
+
+### QUERY TRACKING DataFrame to log any data issues found during the analysis.
+    #Error Code: A unique identifier for the type of error or issue found.
+    #Source Table: The name of the dataset where the issue was found (e.g., demographics, adverse_events, vitals).
+    #Site: The site associated with the subject (if applicable).
+    #Subject ID: The unique identifier for the subject associated with the issue.
+    #Visit: The visit associated with the issue (if applicable).
+    #Variable: The specific variable or column where the issue was found.
+    #Error Type: The type of error or issue (e.g., missing value, duplicate entry, invalid value).
+    #Description: A brief description of the issue found.
+    #Action: The action taken or recommended to resolve the issue (e.g., imputed missing value, removed duplicate, corrected value).
+    #Status: The current status of the issue (e.g., resolved, unresolved, in progress).
+    #Timestamp: The date and time when the issue was logged or last updated.
+ ###   
+
+# 1. Check if a master query log already exists from a previous run
+if os.path.exists(excel_path):
+    print("Loading existing query log to preserve human updates and statuses...")
+    old_query_log = pd.read_excel(excel_path)
+else:
+    old_query_log = pd.DataFrame()
+
+# 2. Run your validation checks to generate newly found errors (let's call this new_findings_df)
+# new_findings_df contains the fresh errors found in today's dataset run.
+
+# 3. Smart Merge / Reconciliation logic:
+if not old_query_log.empty and not new_findings_df.empty:
+    # Identify errors that already exist (e.g., matching by subject_id and variable)
+    # We want to keep the old query_id, old status, and old date_created!
+    
+    # Merge or filter out duplicates so you don't duplicate queries that are already "Open"
+    pass
+elif old_query_log.empty:
+    # If it's the very first time running, use the new findings as the base
+    master_query_log = new_findings_df
+    master_query_log['created_at'] = pd.Timestamp.today().strftime('%Y-%m-%d %H:%M:%S')
+    master_query_log['status'] = 'Open'
+    
+# 4. Save back to Excel without losing manual site work
+# master_query_log.to_excel(excel_path, index=False)
+master_query_log = pd.DataFrame(columns=[
+    "error_code",
+    "source_table",
+    "site",
+    "subject_id",
+    "visit",
+    "variable",
+    "error_type",
+    "description",
+    "action",
+    "status",
+    "created_at",
+    "updated_at"
+])
 
 def check_missing_values(df, dataset_name):
     print(f"\n{dataset_name} dataset:")
@@ -9,14 +66,23 @@ def check_missing_values(df, dataset_name):
     print(missing_values)
 
 def check_duplicates(df, dataset_name):
-    print(f"Analysing duplicate entries in {dataset_name} dataset:")
+    print(f"Analysing duplicate entries in {dataset_name} dataset...")
     duplicate_entries = df[df.duplicated(keep=False)]
     if not duplicate_entries.empty:
         print(duplicate_entries)
     else:
         print(f"No duplicate entries found in {dataset_name} dataset.")
+
+def check_categorical_values(df, column_name, categories ,dataset_name):
+    print(f"\nAnalysing categorical values in '{column_name}' column of {dataset_name} dataset are correct...")
+    if not df[column_name].isin(categories).all():
+        print(f"Invalid values found in '{column_name}' column of {dataset_name} dataset:")
+        print(df[~df[column_name].isin(categories)])
+    else:
+        print(f"All values in '{column_name}' column of {dataset_name} dataset are valid.")
+
 # ======================================
-# PHASE 1: DATA INSPECTION & INGESTION 
+# PHASE 1: DATA INGESTION & INSPECTION
 # ======================================
 # Loading datasets
 demographics = pd.read_csv('data/demographics.csv')
@@ -87,38 +153,20 @@ else:
 # ==========================================
 # DATA VALIDATION & CLEANING - SITE RULES
 # ==========================================
-print('\n--- Validating site rules ---')
-if not demographics['site'].isin(['Waterford', 'Cork', 'Dublin']).all():
-    invalid_sites = demographics[~demographics['site'].isin(['Waterford', 'Cork', 'Dublin'])]
-    print("Invalid site(s) found:")
-    print(invalid_sites)
-else:
-    print("All sites are valid.")
+
+check_categorical_values(demographics, 'site', ['Waterford', 'Cork', 'Dublin'], "Demographics")
 
 # Column site is valid as all values are either Waterford, Cork or Dublin. No further action is required.
 
 # ==========================================
 # DATA VALIDATION & CLEANING - SEX RULES
 # ==========================================
-print('\n--- Validating sex rules ---')
-if not demographics['sex'].isin(['M', 'F']).all():
-    invalid_sex = demographics[~demographics['sex'].isin(['M', 'F'])]
-    print("Invalid sex value(s) found:")
-    print(invalid_sex)
-else:
-    print("All sex values are valid.")
-
+check_categorical_values(demographics, 'sex', ['M', 'F'], "Demographics")
 # Column sex has accidental spaces in values, some of the values are uppercase and some are lowercase. And some have full name like female instead of F. 
 demographics['sex'] = demographics['sex'].str.strip().str.upper().replace({'FEMALE': 'F', 'MALE': 'M'})
 
 #checking again for invalid sex values after cleaning
-print('\n--- Validating again sex rules ---')
-if not demographics['sex'].isin(['M', 'F']).all():
-    invalid_sex = demographics[~demographics['sex'].isin(['M', 'F'])]
-    print("Invalid sex value(s) found:")
-    print(invalid_sex)
-else:
-    print("All sex values are valid.")
+check_categorical_values(demographics, 'sex', ['M', 'F'], "Demographics")
 
 # ==========================================
 # DATA VALIDATION & CLEANING - CONSENT RULES
@@ -162,26 +210,13 @@ else:
 # ==========================================
 # DATA VALIDATION & CLEANING - ARM RULES
 # ==========================================
-print('n --- Validating arm rules ---')
-if demographics['arm'].isin(['A', 'B']).all() == False:
-    invalid_arm = demographics[~demographics['arm'].isin(['A', 'B'])]
-    print("Invalid arm(s) found:")
-    print(invalid_arm)
-else:
-    print("All arm values are valid.")  
-
+check_categorical_values(demographics, 'arm', ['A', 'B'], "Demographics")
 # ====================================================================================
 # PHASE 2: DATA CLEANING & VALIDATION - ADVERSE EVENT DATASET
 # ====================================================================================
 # There is no missing values in the adverse events dataset.
 # Checking for duplicate entries in the adverse events dataset.
-print('\n--- Checking for duplicates in adverse events dataset ---')
-duplicate_entries_adverse = adverse_events[adverse_events.duplicated(keep=False)]
-if not duplicate_entries_adverse.empty:
-    print("Duplicate entries found in adverse events dataset:")
-    print(duplicate_entries_adverse)
-else:
-    print("No duplicate entries found in adverse events dataset.")
+check_duplicates(adverse_events, "Adverse Events")
 # ==========================================
 # DATA VALIDATION & CLEANING - SUBJECT_ID RULES
 # ==========================================
@@ -206,17 +241,14 @@ else:
 # ==========================================
 # DATA VALIDATION & CLEANING - AE TERM RULES
 # ==========================================
-print('\n--- Validating AE term rules ---')
 # Checking all unique values in the 'ae_term' column to ensure they are valid and consistent.
-unique_ae_terms = adverse_events['ae_term'].unique()
-print("Unique AE terms:")
-print(unique_ae_terms)
+check_categorical_values(adverse_events, 'ae_term', ['Fatigue', 'Rash', 'Nausea', 'Headache', 'Dizziness', 'Cough'], "Adverse Events")
 # All data consistent and valid. No further action is required.
 
 # ==========================================
 # DATA VALIDATION & CLEANING - START DATE RULES
 # ==========================================
-# Start date must be a valid caledar dat and must be on or after the subject's randomisation date.
+# Start date must be a valid caledar date and must be on or after the subject's randomisation date.
 print('\n--- Validating start date rules ---')
 adverse_events['start_date'] = pd.to_datetime(adverse_events['start_date'], errors='coerce')
 mapping_rand_dates_to_adverse_events = adverse_events.merge(demographics,left_on='subject_id',right_on='subject_id')
@@ -244,19 +276,15 @@ else:
 # DATA VALIDATION & CLEANING - SEVERITY RULES
 # ==========================================
 # Severity must be either mild, moderate or severe. Cannot be missing.
-print('\n--- Validating severity rules ---')
-print("Unique severity values:")
-print(adverse_events['severity'].unique())
-print("All severity values are valid.")
+check_categorical_values(adverse_events, 'severity', ['Mild', 'Severe', 'Moderate'], "Adverse Events")
 
 # ==========================================
 # DATA VALIDATION & CLEANING - SERIOUS RULES
 # ==========================================
-print('\n--- Validating serious rules ---')
 # Serious must be either Y or N. Cannot be missing.
-print("Unique serious values:")
-print(adverse_events['serious'].unique())
-print("All serious values are valid.")
+check_categorical_values(adverse_events, 'serious', ['Y', 'N'], "Adverse Events")
+
+# TASK: Need to check that if the severity is severe, then the serious column must be either Y. If the severity is mild or moderate, then the serious column must be N.
 
 # ====================================================================================
 # PHASE 2: DATA CLEANING & VALIDATION - VITALS DATASET
@@ -286,10 +314,14 @@ else:
 # ==========================================
 # DATA VALIDATION & CLEANING - VISIT RULES
 # ==========================================
-print('\n--- Validating visit rules ---')
-print("Unique visit values:")
-print(vitals['visit'].unique())
+check_categorical_values(vitals, 'visit', ['Baseline', 'Week4', 'Week8', 'Week12'], "Vitals")
 # All values are valid. No further action is required.
+
+# I need to check that each subject has one visit for each type of visit. 
+subject_visit_counts = vitals.groupby('subject_id')['visit'].nunique()
+invalid_subject_visits = subject_visit_counts[subject_visit_counts < 4]
+print(invalid_subject_visits)
+
 
 # ==========================================
 # DATA VALIDATION & CLEANING - VISIT DATE RULES
@@ -302,14 +334,14 @@ print('\n--- Validating visit date agains consent date ---')
 invalid_visit_date_consent = mapping_rand_dates_to_vitals[mapping_rand_dates_to_vitals['visit_date'] < mapping_rand_dates_to_vitals['consent_date']]
 if not invalid_visit_date_consent.empty:
     print("There is invalid visit dates against consent date:")
-    print(invalid_visit_date_consent)
+    print(invalid_visit_date_consent.sort_values(by=['subject_id', 'visit_date']))
 else:
     print("All visit dates are valid against consent date.")
 print('\n--- Validating visit date agains randomisation date ---')
 invalid_visit_date_randomisation = mapping_rand_dates_to_vitals[mapping_rand_dates_to_vitals['visit_date'] < mapping_rand_dates_to_vitals['randomisation_date']]
 if not invalid_visit_date_randomisation.empty:
     print("There is invalid visit dates against randomisation date:")
-    print(invalid_visit_date_randomisation)
+    print(invalid_visit_date_randomisation.sort_values(by=['subject_id', 'visit_date']))
 else:
     print("All visit dates are valid against randomisation date.")
 
@@ -392,3 +424,7 @@ if not extreme_fluctuations.empty:
     print(extreme_fluctuations)
 else:
     print("All weight changes fall within expected clinical parameters.")
+
+# ============================================
+# PHASE 3: DERIVATION & FEATURE ENGINEERING
+# ============================================
